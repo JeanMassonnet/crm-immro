@@ -1,0 +1,23 @@
+export const documentTranslations = {
+  title: 'Documents',
+  templates: 'Modèles',
+  addTemplate: 'Nouveau modèle',
+  editTemplate: 'Modifier le modèle',
+  generateDocument: 'Générer un document',
+  templateName: 'Nom du modèle',
+  templateContent: 'Contenu',
+  templateType: 'Type de document',
+  visitForm: 'Bon de visite',
+  offerForm: "Offre d'achat",
+  customForm: 'Document personnalisé',
+  selectClient: 'Sélectionner un contact',
+  selectProperty: 'Sélectionner un bien',
+  preview: 'Aperçu',
+  generate: 'Générer',
+  download: 'Télécharger',
+  noTemplates: 'Aucun modèle disponible',
+  noDocuments: 'Aucun document généré',
+  generatedDocuments: 'Documents générés',
+  previewDocument: 'Aperçu du document',
+  validateAndSave: 'Valider et enregistrer'
+};

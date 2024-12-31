@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Function to check if user is accessing their own data
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Rules for users collection
+    match /users/{userId} {
+      // Allow creating user document during registration
+      allow create: if isAuthenticated() && request.auth.uid == userId && 
+        request.resource.data.keys().hasAll(['email', 'firstName', 'lastName', 'phone', 'companyName', 'siret']);
+      
+      // Allow reading user's own data
+      allow read: if isOwner(userId);
+      
+      // Allow updating own data
+      allow update: if isOwner(userId);
+    }
+
+    // Rules for other collections (properties, clients, etc.)
+    match /{collection}/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}
