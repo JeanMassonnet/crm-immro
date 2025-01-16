@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './config/firebase';
+import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -12,10 +15,41 @@ import BuyerSearches from './pages/BuyerSearches';
 import Tasks from './pages/Tasks';
 import Documents from './pages/Documents';
 import Settings from './pages/Settings';
-import { useAuthStore } from './store/authStore';
 
 export default function App() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, setUser } = useAuthStore();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Utilisateur connecté
+        setUser({
+          id: user.uid,
+          email: user.email || '',
+          firstName: user.displayName?.split(' ')[0] || '',
+          lastName: user.displayName?.split(' ')[1] || '',
+          phone: user.phoneNumber || '',
+          address: {
+            street: '',
+            streetNumber: '',
+            zipCode: '',
+            city: '',
+            country: 'France'
+          },
+          companyName: '',
+          siret: '',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+      } else {
+        // Utilisateur déconnecté
+        setUser(null);
+      }
+    });
+
+    // Cleanup subscription
+    return () => unsubscribe();
+  }, [setUser]);
 
   return (
     <BrowserRouter basename="/">

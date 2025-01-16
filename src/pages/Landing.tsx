@@ -95,10 +95,10 @@ export default function Landing() {
                 de l'immobilier qui visent l'excellence.
               </p>
               <Link
-                to="/login"
+                to="/login?register=true"
                 className="group inline-flex items-center px-8 py-4 bg-white text-primary font-semibold rounded-lg hover:bg-gray-100 transition-colors"
               >
-                Commencer maintenant
+                Créer un compte
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -106,7 +106,6 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Rest of the component remains unchanged */}
       {/* Features Section */}
       <section className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -185,10 +184,10 @@ export default function Landing() {
             et la performance.
           </p>
           <Link
-            to="/login"
+            to="/login?register=true"
             className="group inline-flex items-center px-8 py-4 bg-white text-primary font-semibold rounded-lg hover:bg-gray-100 transition-colors"
           >
-            Commencer maintenant
+            Créer un compte
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
