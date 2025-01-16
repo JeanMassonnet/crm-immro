@@ -1,13 +1,13 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, browserLocalPersistence, setPersistence } from "firebase/auth";
+import { getAuth, browserPopupRedirectResolver, initializeAuth, indexedDBLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDnB4z0f_7CAkJ44TJZb7ePwjY6Pz0iIbA",
-  authDomain: "crm-immro.com",
-  projectId: "crm-immro",
-  storageBucket: "crm-immro.firebasestorage.app",
+  authDomain: "immro-166b5.firebaseapp.com",
+  projectId: "immro-166b5",
+  storageBucket: "immro-166b5.appspot.com",
   messagingSenderId: "758147970707",
   appId: "1:758147970707:web:68aef42502d2f35e1c3f66"
 };
@@ -15,13 +15,11 @@ const firebaseConfig = {
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase services
-export const auth = getAuth(app);
+// Initialize Firebase services with modern configuration
+export const auth = initializeAuth(app, {
+  persistence: indexedDBLocalPersistence,
+  popupRedirectResolver: browserPopupRedirectResolver,
+});
+
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-
-// Set authentication persistence to local
-setPersistence(auth, browserLocalPersistence)
-  .catch((error) => {
-    console.error("Auth persistence error:", error);
-  });

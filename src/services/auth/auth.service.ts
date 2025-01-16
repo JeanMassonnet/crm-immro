@@ -2,7 +2,6 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  User as FirebaseUser,
   updateProfile
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -73,6 +72,6 @@ export async function logout(): Promise<void> {
   await signOut(auth);
 }
 
-export function getCurrentUser(): FirebaseUser | null {
+export function getCurrentUser() {
   return auth.currentUser;
 }
