@@ -59,7 +59,7 @@ export default function Landing() {
         <div 
           className="relative min-h-screen flex items-center"
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1613553507747-5f8d62ad5904?auto=format&fit=crop&q=80&w=2000)',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -88,7 +88,7 @@ export default function Landing() {
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
             <div className="max-w-3xl">
               <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight">
-                Le meilleur CRM du marché pour les mandataires immobiliers
+                L'excellence immobilière à portée de main
               </h1>
               <p className="text-xl md:text-2xl text-white/90 mb-12 leading-relaxed">
                 Découvrez une solution CRM premium conçue pour les professionnels 
@@ -106,6 +106,7 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* Rest of the component remains unchanged */}
       {/* Features Section */}
       <section className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

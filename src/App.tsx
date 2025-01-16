@@ -18,7 +18,7 @@ export default function App() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/">
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Landing />} />

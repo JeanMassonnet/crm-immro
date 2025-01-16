@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { User } from '../types';
-import { loginWithEmail, registerWithEmail, logout as firebaseLogout } from '../services/auth/auth.service';
+import { loginWithEmail, registerWithEmail, logout as firebaseLogout } from '../services/auth';
 import { getAuthErrorMessage } from '../services/auth/errors';
 import type { AuthUser } from '../services/auth/types';
 
