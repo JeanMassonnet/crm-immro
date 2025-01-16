@@ -30,42 +30,61 @@ export async function registerWithEmail(
   password: string, 
   userData: Omit<AuthUser, 'password'>
 ): Promise<User> {
-  // Create auth user first
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const { user } = userCredential;
+  let firebaseUser = null;
+  
+  try {
+    // 1. Créer l'utilisateur dans Firebase Auth et attendre la confirmation
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    firebaseUser = userCredential.user;
 
-  // Update display name
-  await updateProfile(user, {
-    displayName: `${userData.firstName} ${userData.lastName}`
-  });
+    // 2. S'assurer que l'utilisateur est bien créé et authentifié
+    if (!firebaseUser || !firebaseUser.uid) {
+      throw new Error('Failed to create Firebase user');
+    }
 
-  // Prepare user document data
-  const userDocData = {
-    email,
-    firstName: userData.firstName,
-    lastName: userData.lastName,
-    phone: userData.phone,
-    companyName: userData.companyName,
-    siret: userData.siret,
-    address: {
-      street: '',
-      streetNumber: '',
-      zipCode: '',
-      city: '',
-      country: 'France'
-    },
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
+    // 3. Mettre à jour le profil avec le nom complet
+    await updateProfile(firebaseUser, {
+      displayName: `${userData.firstName} ${userData.lastName}`
+    });
 
-  // Create user document in Firestore
-  const userRef = doc(db, 'users', user.uid);
-  await setDoc(userRef, userDocData);
+    // 4. Préparer les données utilisateur pour Firestore
+    const userDocData = {
+      id: firebaseUser.uid,
+      email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      phone: userData.phone,
+      companyName: userData.companyName,
+      siret: userData.siret,
+      address: {
+        street: '',
+        streetNumber: '',
+        zipCode: '',
+        city: '',
+        country: 'France'
+      },
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-  return {
-    ...userDocData,
-    id: user.uid
-  } as User;
+    // 5. Créer le document utilisateur dans Firestore
+    // Utiliser le même ID que celui de Firebase Auth
+    const userRef = doc(db, 'users', firebaseUser.uid);
+    await setDoc(userRef, userDocData);
+
+    // 6. Retourner les données utilisateur
+    return userDocData as User;
+  } catch (error) {
+    // En cas d'erreur, nettoyer en supprimant l'utilisateur Firebase Auth
+    if (firebaseUser) {
+      try {
+        await firebaseUser.delete();
+      } catch (deleteError) {
+        console.error('Error cleaning up Firebase user:', deleteError);
+      }
+    }
+    throw error;
+  }
 }
 
 export async function logout(): Promise<void> {

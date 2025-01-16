@@ -20,6 +20,7 @@ export default function App() {
   const { isAuthenticated, setUser } = useAuthStore();
 
   useEffect(() => {
+    // Déplacer l'initialisation de l'auth listener ici
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         // Utilisateur connecté

@@ -33,6 +33,7 @@ export default function Login() {
   const { login, register: registerUser } = useAuthStore();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -63,7 +64,11 @@ export default function Login() {
     try {
       setError(null);
       await registerUser(data);
-      navigate('/app/dashboard');
+      setRegistrationSuccess(true);
+      setIsRegistering(false);
+      setTimeout(() => {
+        setRegistrationSuccess(false);
+      }, 3000);
     } catch (err: any) {
       setError(err.message);
     }
@@ -85,8 +90,14 @@ export default function Login() {
           </div>
         )}
 
+        {registrationSuccess && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+            Compte créé avec succès ! Vous pouvez maintenant vous connecter.
+          </div>
+        )}
+
         {isRegistering ? (
-          <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+          <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
