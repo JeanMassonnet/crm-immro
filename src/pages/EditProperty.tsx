@@ -1,31 +1,71 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { ArrowLeft, Plus } from 'lucide-react';
-import { Property, PropertyType, PropertyStatus, PropertyImage } from '../types';
+import { ArrowLeft } from 'lucide-react';
+import { Property, PropertyType, PropertyStatus, PropertyImage, PropertyContact } from '../types';
 import { usePropertyStore } from '../store/propertyStore';
-import { useClientStore } from '../store/clientStore';
 import { translations } from '../utils/translations';
-import ClientModal from '../components/modals/ClientModal';
 import ImageUpload from '../components/ImageUpload';
+import { useGooglePlaces } from '../hooks/useGooglePlaces';
+import PropertyContactSelect from '../components/PropertyContactSelect';
 
 const { properties: t, common } = translations;
 
-type PropertyFormData = Omit<Property, 'id' | 'createdAt' | 'updatedAt' | 'images'>;
+type PropertyFormData = Omit<Property, 'id' | 'createdAt' | 'updatedAt' | 'images' | 'sellerId' | 'contacts'>;
+
+type AddressComponents = {
+  streetNumber: string;
+  street: string;
+  city: string;
+  zipCode: string;
+};
 
 export default function EditProperty() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { register, handleSubmit, reset, watch } = useForm<PropertyFormData>();
+  const { register, handleSubmit, reset, setValue, watch } = useForm<PropertyFormData>();
   const { properties, addProperty, updateProperty } = usePropertyStore();
-  const { clients } = useClientStore();
-  const [showClientModal, setShowClientModal] = useState(false);
   const [images, setImages] = useState<PropertyImage[]>([]);
+  const [contacts, setContacts] = useState<PropertyContact[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [addressComponents, setAddressComponents] = useState<AddressComponents>({
+    streetNumber: '',
+    street: '',
+    city: '',
+    zipCode: '',
+  });
   
   const property = id ? properties.find(p => p.id === id) : undefined;
-  const sellers = clients.filter((client) => client.type === 'seller');
-  const selectedSellerId = watch('sellerId');
+
+  const { initAutocomplete } = useGooglePlaces({
+    onPlaceSelected: (place) => {
+      let components: AddressComponents = {
+        streetNumber: '',
+        street: '',
+        city: '',
+        zipCode: '',
+      };
+
+      place.address_components?.forEach((component: any) => {
+        if (component.types.includes('street_number')) {
+          components.streetNumber = component.long_name;
+        }
+        if (component.types.includes('route')) {
+          components.street = component.long_name;
+        }
+        if (component.types.includes('locality')) {
+          components.city = component.long_name;
+        }
+        if (component.types.includes('postal_code')) {
+          components.zipCode = component.long_name;
+        }
+      });
+
+      setAddressComponents(components);
+      const fullAddress = `${components.streetNumber} ${components.street}, ${components.zipCode} ${components.city}`;
+      setValue('location', fullAddress);
+    }
+  });
 
   useEffect(() => {
     if (property) {
@@ -39,9 +79,9 @@ export default function EditProperty() {
         bedrooms: property.bedrooms,
         bathrooms: property.bathrooms,
         status: property.status,
-        sellerId: property.sellerId,
       });
       setImages(property.images);
+      setContacts(property.contacts || []);
     } else {
       reset({
         title: '',
@@ -53,11 +93,18 @@ export default function EditProperty() {
         bedrooms: 1,
         bathrooms: 1,
         status: 'available',
-        sellerId: '',
       });
       setImages([]);
+      setContacts([]);
     }
   }, [property, reset]);
+
+  useEffect(() => {
+    const locationInput = document.getElementById('location') as HTMLInputElement;
+    if (locationInput) {
+      initAutocomplete(locationInput);
+    }
+  }, [initAutocomplete]);
 
   const onSubmit = (data: PropertyFormData) => {
     if (images.length === 0) {
@@ -68,6 +115,8 @@ export default function EditProperty() {
     const propertyData = {
       ...data,
       images,
+      contacts,
+      sellerId: '', // Champ vide par défaut
     };
 
     if (property) {
@@ -119,6 +168,17 @@ export default function EditProperty() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
+            Contacts associés
+          </label>
+          <PropertyContactSelect
+            selectedContacts={contacts}
+            onChange={setContacts}
+            maxContacts={4}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Titre
           </label>
           <input
@@ -157,10 +217,20 @@ export default function EditProperty() {
             {t.location}
           </label>
           <input
+            id="location"
             {...register('location', { required: true })}
             type="text"
+            placeholder="Saisissez l'adresse du bien"
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary focus:ring-opacity-50"
           />
+          {addressComponents.city && (
+            <div className="mt-2 text-sm text-gray-600">
+              <p>Numéro : {addressComponents.streetNumber}</p>
+              <p>Rue : {addressComponents.street}</p>
+              <p>Ville : {addressComponents.city}</p>
+              <p>Code postal : {addressComponents.zipCode}</p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-4">
@@ -200,35 +270,6 @@ export default function EditProperty() {
               type="number"
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary focus:ring-opacity-50"
             />
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t.seller}
-            </label>
-            <select
-              {...register('sellerId', { required: true })}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary focus:ring-opacity-50"
-            >
-              <option value="">Sélectionner un vendeur</option>
-              {sellers.map((seller) => (
-                <option key={seller.id} value={seller.id}>
-                  {seller.firstName} {seller.lastName}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="pt-6">
-            <button
-              type="button"
-              onClick={() => setShowClientModal(true)}
-              className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Ajouter un vendeur
-            </button>
           </div>
         </div>
 
@@ -275,12 +316,6 @@ export default function EditProperty() {
           </button>
         </div>
       </form>
-
-      <ClientModal
-        isOpen={showClientModal}
-        onClose={() => setShowClientModal(false)}
-        defaultType="seller"
-      />
     </div>
   );
 }

@@ -62,6 +62,11 @@ export type PropertyCriteria = {
   bathrooms?: number;
 };
 
+export type PropertyContact = {
+  id: string;
+  role: 'owner' | 'tenant' | 'agent';
+};
+
 export type Property = {
   id: string;
   title: string;
@@ -75,6 +80,7 @@ export type Property = {
   images: PropertyImage[];
   documents: PropertyDocument[];
   status: PropertyStatus;
+  contacts: PropertyContact[];
   sellerId: string;
   createdAt: Date;
   updatedAt: Date;
